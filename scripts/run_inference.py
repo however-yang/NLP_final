@@ -10,7 +10,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from text_rich_mllm.inference import generate_predictions
-from text_rich_mllm.models.load_backbone import load_model_bundle
+from text_rich_mllm.models.load_backbone import load_model_bundle_with_optional_checkpoint
 from text_rich_mllm.schemas import UnifiedSample
 from text_rich_mllm.utils import load_yaml, read_jsonl, write_jsonl
 from text_rich_mllm.utils.constants import PromptStyle
@@ -32,11 +32,24 @@ def main() -> None:
     samples = [UnifiedSample.from_dict(record) for record in read_jsonl(args.samples)]
     generation_config = load_yaml(args.generation_config)
 
-    if args.checkpoint:
-        processor, model = load_model_bundle(args.checkpoint, processor_name=args.checkpoint)
-    else:
-        model_cfg = load_yaml(args.model_config)
-        processor, model = load_model_bundle(**model_cfg)
+    banner_ckpt = (
+        f"\n[run_inference] samples_file={args.samples!s} n={len(samples)} "
+        f"prompt_style={args.prompt_style!r} output={args.output!s} "
+        f"checkpoint={args.checkpoint!s}"
+    )
+    banner_base = (
+        f"\n[run_inference] samples_file={args.samples!s} n={len(samples)} "
+        f"prompt_style={args.prompt_style!r} output={args.output!s} "
+        f"model_config={args.model_config!s}"
+    )
+    print(banner_ckpt if args.checkpoint else banner_base, flush=True)
+    if args.limit is not None:
+        print(f"[run_inference] --limit={args.limit}", flush=True)
+
+    model_cfg = load_yaml(args.model_config)
+    processor, model = load_model_bundle_with_optional_checkpoint(checkpoint=args.checkpoint, model_config=model_cfg)
+
+    print("[run_inference] model/processor loaded; generating…", flush=True)
 
     existing = {}
     if args.resume and Path(args.output).exists():

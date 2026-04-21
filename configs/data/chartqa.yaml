@@ -1,5 +1,6 @@
 name: chartqa
 hf_dataset_name: HuggingFaceM4/ChartQA
+hf_cache_dir: data/.cache/huggingface_datasets
 hf_subset: null
 hf_train_split: train
 hf_validation_split: val

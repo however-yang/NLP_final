@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
+from text_rich_mllm.utils.paths import resolve_sample_image_path
+
 
 @dataclass(slots=True)
 class UnifiedSample:
@@ -26,7 +28,7 @@ class UnifiedSample:
             sample_id=str(payload["sample_id"]),
             dataset_name=str(payload["dataset_name"]),
             task_type=str(payload["task_type"]),
-            image_path=str(payload["image_path"]),
+            image_path=resolve_sample_image_path(str(payload["image_path"])),
             question=str(payload["question"]),
             choices=list(payload.get("choices", [])),
             gold_answer=str(payload.get("gold_answer", "")),

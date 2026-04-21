@@ -1,0 +1,20 @@
+# InfographicVQA：使用带问答列的 Hub 快照（Ryoo72/InfographicsVQA，源自 DUE document.jsonl + 图片）。
+# 说明：此前使用的 kenza-ily/infographicvqa_disco 在 Hub 上实际为 ImageFolder，仅有 image 列，
+#       导出 raw 后 question 为空，预处理会得到 0 条。切换数据源后请删除旧 raw 并重新 download。
+#
+# Ryoo72 版本仅有官方 `test` 分割；用百分比切片在本仓库内近似 8:2（train / validation）。
+name: infographicvqa
+hf_dataset_name: Ryoo72/InfographicsVQA
+hf_cache_dir: data/.cache/huggingface_datasets
+hf_subset: null
+hf_train_split: "test[:80%]"
+hf_validation_split: "test[80%:]"
+image_root: data/raw/infographicvqa/images
+raw_train: data/raw/infographicvqa/train.jsonl
+raw_validation: data/raw/infographicvqa/validation.jsonl
+processed_train: data/processed/infographicvqa/train.jsonl
+processed_validation: data/processed/infographicvqa/validation.jsonl
+stats_train: outputs/analysis/infographicvqa_train_preprocess.json
+stats_validation: outputs/analysis/infographicvqa_validation_preprocess.json
+check_image_paths: false
+drop_missing_images: false

@@ -1,5 +1,7 @@
 name: docvqa
 hf_dataset_name: pixparse/docvqa-wds
+# 将 HF datasets 下载与 Arrow 生成缓存放到数据盘，避免系统盘写满（Errno 28）
+hf_cache_dir: data/.cache/huggingface_datasets
 hf_subset: null
 hf_train_split: train
 hf_validation_split: validation

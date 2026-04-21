@@ -2,31 +2,50 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from text_rich_mllm.models.generation_utils import open_image_as_rgb
+from text_rich_mllm.utils.paths import resolve_training_output_dir
+from text_rich_mllm.models.vision_prompt import ensure_image_placeholders_in_text
 from text_rich_mllm.training.hf_dataset import SupervisedTrainingDataset
 
 
 class MultimodalSupervisedCollator:
-    def __init__(self, processor, *, max_length: int | None = None, ignore_index: int = -100):
+    def __init__(
+        self,
+        processor,
+        *,
+        max_length: int | None = None,
+        ignore_index: int = -100,
+        image_max_pixels: int | None = None,
+    ):
         self.processor = processor
         self.max_length = max_length
         self.ignore_index = ignore_index
+        # Qwen2/3-VL：大图会产生极长视觉 token；loss 处要对整段 logits 做 float，显存 ~ O(seq×vocab)
+        self.image_max_pixels = image_max_pixels
 
     def __call__(self, examples):
-        from PIL import Image
+        images = [open_image_as_rgb(example.image_path) for example in examples]
+        prompts = [
+            ensure_image_placeholders_in_text(self.processor, example.prompt, num_images=1)
+            for example in examples
+        ]
+        full_texts = []
+        for example, p_aug in zip(examples, prompts):
+            ans = example.target_answer.strip()
+            full_texts.append(f"{p_aug} {ans}".strip() if ans else p_aug)
 
-        images = [Image.open(example.image_path).convert("RGB") for example in examples]
-        prompts = [example.prompt for example in examples]
-        full_texts = [f"{example.prompt} {example.target_answer}".strip() for example in examples]
-
+        # Qwen3-VL：truncation=max_length 会截断序列，导致「文本里 image 占位」与 input_ids 中视觉 token 数量不一致
+        # （processing_utils._check_special_mm_tokens）。多模态训练须关闭 truncation，仅靠 padding 组 batch。
         processor_kwargs = {
             "images": images,
             "text": full_texts,
             "return_tensors": "pt",
             "padding": True,
-            "truncation": self.max_length is not None,
+            "truncation": False,
         }
-        if self.max_length is not None:
-            processor_kwargs["max_length"] = self.max_length
+        if self.image_max_pixels is not None:
+            processor_kwargs["images_kwargs"] = {"max_pixels": self.image_max_pixels}
+
         full_batch = self.processor(**processor_kwargs)
 
         prompt_kwargs = dict(processor_kwargs)
@@ -58,7 +77,7 @@ def _build_training_arguments(output_dir: str, train_config: dict):
         logging_steps=train_config.get("logging_steps", 10),
         save_strategy=train_config.get("save_strategy", "steps"),
         save_steps=train_config.get("save_steps", 100),
-        evaluation_strategy=train_config.get("eval_strategy", "no"),
+        eval_strategy=train_config.get("eval_strategy", "no"),
         eval_steps=train_config.get("eval_steps"),
         save_total_limit=train_config.get("save_total_limit", 2),
         remove_unused_columns=False,
@@ -69,6 +88,7 @@ def _build_training_arguments(output_dir: str, train_config: dict):
         load_best_model_at_end=train_config.get("load_best_model_at_end", False),
         metric_for_best_model=train_config.get("metric_for_best_model", "eval_loss"),
         greater_is_better=train_config.get("greater_is_better", False),
+        gradient_checkpointing=train_config.get("gradient_checkpointing", False),
     )
 
 
@@ -83,13 +103,17 @@ def train_with_hf_trainer(
 ):
     from transformers import Trainer
 
-    output_dir = train_config.get("output_dir", "outputs/checkpoints/default")
+    output_dir = resolve_training_output_dir(train_config.get("output_dir", "outputs/checkpoints/default"))
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     training_args = _build_training_arguments(output_dir, train_config)
+    # LoRA + gradient checkpointing：底层冻结时需让输入 embedding 参与计算图，否则 checkpoint 反传报错
+    if getattr(training_args, "gradient_checkpointing", False) and hasattr(model, "enable_input_require_grads"):
+        model.enable_input_require_grads()
     collator = MultimodalSupervisedCollator(
         processor,
         max_length=train_config.get("max_seq_length"),
         ignore_index=train_config.get("ignore_index", -100),
+        image_max_pixels=train_config.get("image_max_pixels"),
     )
     trainer = Trainer(
         model=model,

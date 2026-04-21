@@ -1,0 +1,18 @@
+name: textvqa
+hf_dataset_name: facebook/textvqa
+hf_cache_dir: data/.cache/huggingface_datasets
+# datasets>=3 不再执行 Hub 上的 textvqa.py 脚本，需走官方 Parquet 转换分支
+hf_revision: refs/convert/parquet
+# Parquet 分支上 BuilderConfig 名为 default（不是 main 分支的脚本名 textvqa）
+hf_subset: default
+hf_train_split: train
+hf_validation_split: validation
+image_root: data/raw/textvqa/images
+raw_train: data/raw/textvqa/train.jsonl
+raw_validation: data/raw/textvqa/validation.jsonl
+processed_train: data/processed/textvqa/train.jsonl
+processed_validation: data/processed/textvqa/validation.jsonl
+stats_train: outputs/analysis/textvqa_train_preprocess.json
+stats_validation: outputs/analysis/textvqa_validation_preprocess.json
+check_image_paths: false
+drop_missing_images: false

@@ -9,6 +9,28 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+
+def _bootstrap_hf_cache_env() -> None:
+    """若已设置 DATA_DISK 或 TEXT_RICH_MLLM_MODEL_DISK，且未显式导出 HF_*，则将 Hub 权重缓存默认落到该盘。"""
+    import os
+
+    base = os.environ.get("TEXT_RICH_MLLM_MODEL_DISK", "").strip() or os.environ.get("DATA_DISK", "").strip()
+    if not base:
+        return
+    pairs = (
+        ("HF_HOME", "hf_home"),
+        ("HF_HUB_CACHE", "huggingface_hub"),
+        ("HF_DATASETS_CACHE", "huggingface_cache"),
+        ("TRANSFORMERS_CACHE", "transformers_cache"),
+    )
+    for env_key, sub in pairs:
+        os.environ.setdefault(env_key, os.path.join(base, sub))
+    for _, sub in pairs:
+        os.makedirs(os.path.join(base, sub), exist_ok=True)
+
+
+_bootstrap_hf_cache_env()
+
 from text_rich_mllm.utils.constants import PromptStyle
 from text_rich_mllm.models.load_backbone import load_model_bundle
 from text_rich_mllm.schemas import UnifiedSample

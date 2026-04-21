@@ -1,5 +1,6 @@
 name: scienceqa
 hf_dataset_name: TheMrguiller/ScienceQA
+hf_cache_dir: data/.cache/huggingface_datasets
 hf_subset: null
 hf_validation_split: test
 image_root: data/raw/scienceqa/images
@@ -8,3 +9,5 @@ processed_validation: data/processed/scienceqa/validation.jsonl
 stats_validation: outputs/analysis/scienceqa_validation_preprocess.json
 check_image_paths: false
 drop_missing_images: false
+# 无图样本写入占位 PNG 路径，避免 processed 中 image_path 为空
+placeholder_for_empty_image: data/raw/scienceqa/assets/placeholder_empty.png

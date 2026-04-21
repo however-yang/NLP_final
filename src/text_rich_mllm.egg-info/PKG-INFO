@@ -52,7 +52,7 @@ docs/            proposal, poster, final report assets
 
 ```bash
 conda env create -f environment.yml
-conda activate text-rich-mllm
+conda activate nlp_final
 pip install -e .
 python scripts/check_runtime.py
 ```

@@ -20,6 +20,38 @@ def test_prompt_builder_uses_mcq_template_when_choices_exist() -> None:
     assert "Return only the option letter." in prompt
 
 
+def test_prompt_builder_uses_textvqa_template() -> None:
+    sample = UnifiedSample(
+        sample_id="3",
+        dataset_name="textvqa",
+        task_type=TaskType.SCENE_TEXT_QA.value,
+        image_path="x.jpg",
+        question="Who wrote this?",
+        gold_answer="Jane",
+        answer_type=AnswerType.OPEN_TEXT.value,
+        split="train",
+    )
+    prompt = PromptBuilder().build(sample)
+    assert "scene text" in prompt.lower()
+    assert "Who wrote this?" in prompt
+
+
+def test_prompt_builder_uses_infographic_template() -> None:
+    sample = UnifiedSample(
+        sample_id="4",
+        dataset_name="infographicvqa",
+        task_type=TaskType.INFOGRAPHIC_QA.value,
+        image_path="y.png",
+        question="What is the total?",
+        gold_answer="100",
+        answer_type=AnswerType.OPEN_TEXT.value,
+        split="train",
+    )
+    prompt = PromptBuilder().build(sample)
+    assert "infographic" in prompt.lower()
+    assert "What is the total?" in prompt
+
+
 def test_direct_prompt_is_less_constrained() -> None:
     sample = UnifiedSample(
         sample_id="2",

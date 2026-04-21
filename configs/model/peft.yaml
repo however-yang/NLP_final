@@ -1,5 +1,5 @@
-r: 16
-lora_alpha: 32
+r: 48
+lora_alpha: 96
 lora_dropout: 0.05
 bias: none
 task_type: CAUSAL_LM

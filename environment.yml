@@ -1,4 +1,4 @@
-name: text-rich-mllm
+name: nlp_final
 channels:
   - pytorch
   - nvidia
@@ -17,7 +17,7 @@ dependencies:
   - torchaudio
   - pytorch-cuda=12.1
   - pip:
-      - accelerate>=0.33.0
+      - accelerate>=1.1.0
       - datasets>=2.20.0
       - peft>=0.11.0
       - transformers>=4.44.0

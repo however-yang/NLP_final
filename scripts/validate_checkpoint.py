@@ -12,7 +12,7 @@ if str(SRC) not in sys.path:
 from text_rich_mllm.analysis import tag_prediction_records
 from text_rich_mllm.evaluation import UnifiedEvaluator, build_evaluation_report
 from text_rich_mllm.inference import generate_predictions
-from text_rich_mllm.models.load_backbone import load_model_bundle
+from text_rich_mllm.models.load_backbone import load_model_bundle_with_optional_checkpoint
 from text_rich_mllm.schemas import UnifiedSample
 from text_rich_mllm.utils import load_yaml, read_jsonl, write_json, write_jsonl
 from text_rich_mllm.utils.constants import PromptStyle
@@ -36,11 +36,8 @@ def main() -> None:
 
     samples = [UnifiedSample.from_dict(record) for record in read_jsonl(args.samples)]
     generation_config = load_yaml(args.generation_config)
-    if args.checkpoint:
-        processor, model = load_model_bundle(args.checkpoint, processor_name=args.checkpoint)
-    else:
-        model_cfg = load_yaml(args.model_config)
-        processor, model = load_model_bundle(**model_cfg)
+    model_cfg = load_yaml(args.model_config)
+    processor, model = load_model_bundle_with_optional_checkpoint(checkpoint=args.checkpoint, model_config=model_cfg)
 
     existing = {}
     if args.resume and Path(args.predictions_output).exists():

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from text_rich_mllm.utils.constants import AnswerType, MULTIPLE_CHOICE_LABELS
+from text_rich_mllm.utils.constants import AnswerType
 
 
 def normalize_whitespace(text: str) -> str:
@@ -39,12 +39,12 @@ def normalize_numeric_text(text: str) -> str:
 
 def extract_choice_label(text: str) -> str:
     cleaned = normalize_whitespace(text).upper()
-    if re.fullmatch(r"[A-F][\s\.\)\]:-]*", cleaned):
+    if re.fullmatch(r"[A-Z][\s\.\)\]:-]*", cleaned):
         return cleaned[0]
-    match = re.search(r"\b(?:ANSWER|OPTION|CHOICE)\s*(?:IS\s*)?[:\-]?\s*([A-F])(?:\b|[\.\)])", cleaned)
+    match = re.search(r"\b(?:ANSWER|OPTION|CHOICE)\s*(?:IS\s*)?[:\-]?\s*([A-Z])(?:\b|[\.\)])", cleaned)
     if match:
         return match.group(1)
-    match = re.match(r"^\(?([A-F])[\)\.\:\-]\s*", cleaned)
+    match = re.match(r"^\(?([A-Z])[\)\.\:\-]\s*", cleaned)
     if match:
         return match.group(1)
     return cleaned
@@ -59,7 +59,8 @@ def normalize_answer(text: str, answer_type: str) -> str:
 
 
 def is_valid_choice_prediction(text: str) -> bool:
-    return extract_choice_label(text) in MULTIPLE_CHOICE_LABELS
+    label = extract_choice_label(text)
+    return len(label) == 1 and "A" <= label <= "Z"
 
 
 def numeric_equal(prediction: str, gold_answer: str, *, tolerance: float = 1e-3) -> bool:

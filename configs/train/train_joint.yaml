@@ -1,3 +1,4 @@
+# 与 proposal 一致：联合 DocVQA + ChartQA（当前已构建的 processed）
 experiment_name: joint_docvqa_chartqa
 datasets:
   - docvqa
@@ -8,13 +9,16 @@ train_files:
 validation_files:
   - data/processed/docvqa/validation.jsonl
   - data/processed/chartqa/validation.jsonl
+# 在 gradient_checkpointing 开启前提下提高利用率：micro-batch=2，像素预算≈常见 Qwen-VL 默认档；仍低于「不设 max_pixels」
 batch_size: 2
 eval_batch_size: 2
 gradient_accumulation_steps: 8
+image_max_pixels: 1003520
 learning_rate: 0.0001
 num_train_epochs: 2
 sampling: balanced
 max_answer_tokens: 16
+# Qwen3-VL 训练 collator 关闭 truncation（避免截断破坏 image token 对齐）；此项保留供后续扩展或筛数据时参考
 max_seq_length: 2048
 prompt_style: structured
 output_dir: outputs/checkpoints/joint_docvqa_chartqa
@@ -28,3 +32,6 @@ load_best_model_at_end: true
 metric_for_best_model: eval_loss
 greater_is_better: false
 seed: 42
+bf16: true
+# VL 长序列下强烈建议开启，显著降低激活显存（略慢）
+gradient_checkpointing: true

@@ -39,9 +39,21 @@ class BaseDatasetAdapter(ABC):
     def _join_image_path(image_root: str | None, image_path: str | None) -> str:
         if not image_path:
             return ""
-        if image_root and not image_path.startswith(("http://", "https://")):
-            return f"{image_root.rstrip('/\\\\')}/{image_path.lstrip('/\\\\')}"
-        return image_path
+        path = str(image_path).strip()
+        if path.startswith(("http://", "https://")):
+            return path
+        if not image_root:
+            return path
+        root = image_root.rstrip("/\\")
+        norm_path = path.replace("\\", "/")
+        norm_root = root.replace("\\", "/")
+        # download_data 已写出相对/绝对完整路径时，避免再拼一次 image_root
+        if norm_path.startswith("/") or (len(path) > 2 and path[1] == ":"):
+            return path
+        if norm_path == norm_root or norm_path.startswith(norm_root + "/"):
+            return path
+        rel = path.lstrip("/\\")
+        return f"{root}/{rel}"
 
     def _extract_image_paths(self, record: dict[str, Any], *, image_root: str | None = None) -> list[str]:
         image_paths: list[str] = []

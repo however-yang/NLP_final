@@ -28,3 +28,25 @@ def test_balanced_mixing_interleaves_datasets() -> None:
     )
     assert [sample.dataset_name for sample in mixed[:4]] == ["docvqa", "chartqa", "docvqa", "chartqa"]
 
+
+def test_balanced_mixing_interleaves_four_datasets() -> None:
+    mixed = mix_training_samples(
+        [
+            _sample("d1", "docvqa"),
+            _sample("c1", "chartqa"),
+            _sample("i1", "infographicvqa"),
+            _sample("t1", "textvqa"),
+            _sample("d2", "docvqa"),
+            _sample("c2", "chartqa"),
+            _sample("i2", "infographicvqa"),
+            _sample("t2", "textvqa"),
+        ],
+        strategy="balanced",
+    )
+    assert [sample.dataset_name for sample in mixed[:4]] == [
+        "docvqa",
+        "chartqa",
+        "infographicvqa",
+        "textvqa",
+    ]
+

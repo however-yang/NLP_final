@@ -1,5 +1,6 @@
 name: mmmu
 hf_dataset_name: MMMU/MMMU
+hf_cache_dir: data/.cache/huggingface_datasets
 hf_subset: null
 hf_validation_split: validation
 hf_subsets:

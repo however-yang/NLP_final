@@ -59,6 +59,8 @@ class UnifiedEvaluator:
             return anls_score(prediction, sample.gold_answer)
         if sample.dataset_name == DatasetName.CHARTQA.value:
             return chartqa_score(prediction, sample.gold_answer, answer_type=sample.answer_type)
+        if sample.dataset_name in {DatasetName.INFOGRAPHICVQA.value, DatasetName.TEXTVQA.value}:
+            return anls_score(prediction, sample.gold_answer)
         if sample.answer_type == AnswerType.MULTIPLE_CHOICE.value:
             return multiple_choice_accuracy(prediction, sample.gold_answer)
         return float(normalize_answer(prediction, sample.answer_type) == normalize_answer(sample.gold_answer, sample.answer_type))

@@ -6,10 +6,12 @@ def composite_validation_score(
     *,
     dataset_weights: dict[str, float] | None = None,
 ) -> float:
+    # 只聚合「浮点指标」；排除 overall/slices、以及 num_predictions 等整数计数（否则会污染 composite）。
+    skip = {"overall", "error_counts", "slices", "invalid_output_rate", "num_predictions", "missing_prediction_count"}
     dataset_metrics = {
         key: value
         for key, value in metric_summary.items()
-        if key not in {"overall", "error_counts", "slices", "invalid_output_rate"} and isinstance(value, (int, float))
+        if key not in skip and isinstance(value, float)
     }
     if not dataset_metrics:
         return 0.0

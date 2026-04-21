@@ -19,8 +19,12 @@ def infer_error_type(record: PredictionRecord) -> str:
         return ErrorType.OUTPUT_MISMATCH.value
     if record.dataset_name == DatasetName.CHARTQA.value:
         return ErrorType.CHART_REASONING_FAILURE.value
+    if record.dataset_name == DatasetName.INFOGRAPHICVQA.value:
+        return ErrorType.LAYOUT_GROUNDING_FAILURE.value
     if record.dataset_name in {DatasetName.SCIENCEQA.value, DatasetName.MMMU.value}:
         return ErrorType.SCIENTIFIC_REASONING_FAILURE.value
+    if record.dataset_name == DatasetName.TEXTVQA.value:
+        return ErrorType.TEXT_READING_FAILURE.value
     return ErrorType.TEXT_READING_FAILURE.value
 
 

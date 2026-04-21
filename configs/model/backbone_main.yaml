@@ -1,5 +1,5 @@
-model_name: Qwen/Qwen2.5-VL-3B-Instruct
+model_name: Qwen/Qwen3-VL-8B-Instruct
 processor_name: null
 trust_remote_code: true
 device_map: auto
-torch_dtype: bfloat16
+dtype: bfloat16
