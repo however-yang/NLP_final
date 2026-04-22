@@ -1,0 +1,44 @@
+# Stage 2 训练配置：从 LoRA checkpoint 续训，加入 TRA-light
+# 对应实验 E5：LoRA + TRA-light
+
+experiment_name: joint_tra_light
+datasets:
+  - docvqa
+  - chartqa
+train_files:
+  - data/processed/docvqa/train.jsonl
+  - data/processed/chartqa/train.jsonl
+validation_files:
+  - data/processed/docvqa/validation.jsonl
+  - data/processed/chartqa/validation.jsonl
+
+# Stage 2 使用更小 lr，保护 LoRA 已学到的知识
+batch_size: 2
+eval_batch_size: 2
+gradient_accumulation_steps: 8
+image_max_pixels: 1003520
+learning_rate: 2.0e-5
+num_train_epochs: 1
+sampling: balanced
+max_answer_tokens: 16
+max_seq_length: 2048
+prompt_style: structured
+output_dir: outputs/checkpoints/joint_tra_light
+
+save_strategy: steps
+logging_steps: 10
+save_steps: 100
+logging_strategy: steps
+eval_strategy: steps
+eval_steps: 100
+load_best_model_at_end: true
+metric_for_best_model: eval_loss
+greater_is_better: false
+seed: 42
+bf16: true
+gradient_checkpointing: true
+
+# TRA 专用配置：由 train_peft.py 的 --tra-config 参数传入
+# 此处留空，由 CLI 控制是否启用 TRA
+use_tra: true
+tra_config: configs/model/tra.yaml

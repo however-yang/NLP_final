@@ -1,0 +1,18 @@
+# TRA-light (Text-Rich Adapter) 超参数配置
+# 插入 Qwen3-VL-8B decoder 的第 16/20/24/28 层后
+
+d_model: 4096          # Qwen3-VL-8B hidden size
+r: 64                  # Bottleneck rank
+insert_layers:         # 在哪些 decoder 层后插入 TRABlock
+  - 16
+  - 20
+  - 24
+  - 28
+dropout: 0.0           # adapter dropout（训练稳定性优先，默认关闭）
+task_names:            # 顺序决定 task_id 映射（0-indexed）
+  - docvqa             # id=0
+  - chartqa            # id=1
+  - scienceqa          # id=2
+  - mmmu               # id=3
+  - infographicvqa     # id=4
+  - textvqa            # id=5

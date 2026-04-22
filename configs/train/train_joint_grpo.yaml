@@ -1,0 +1,41 @@
+# Stage 3 训练配置：Task-Stratified GRPO（实验 E8）
+# 从 TRA checkpoint（E5）或 LoRA checkpoint（E3）续训
+
+experiment_name: joint_ts_grpo
+datasets:
+  - docvqa
+  - chartqa
+train_files:
+  - data/processed/docvqa/train.jsonl
+  - data/processed/chartqa/train.jsonl
+validation_files:
+  - data/processed/docvqa/validation.jsonl
+  - data/processed/chartqa/validation.jsonl
+
+# ── GRPO 专用超参 ────────────────────────────────────────────────────────
+grpo_group_size: 4          # G：每道题采样的答案数
+grpo_kl_coef: 0.01          # β：KL 散度惩罚系数
+grpo_clip_eps: 0.2          # PPO-clip ε
+grpo_temperature: 0.8       # 采样温度（多样性）
+grpo_max_new_tokens: 32     # 生成最大 token 数（VQA 答案通常很短）
+grpo_num_steps: 500         # RL 训练步数（相比 SFT 轮数，RL 不需要太多）
+grpo_eval_steps: 100        # 每隔多少步在 val set 上评测一次
+grpo_save_steps: 100        # 每隔多少步保存 checkpoint
+grpo_task_names:            # 任务列表（顺序决定 task_id，与 tra.yaml 一致）
+  - docvqa
+  - chartqa
+  - scienceqa
+  - mmmu
+  - infographicvqa
+  - textvqa
+
+# ── 优化器超参 ───────────────────────────────────────────────────────────
+learning_rate: 5.0e-6       # RL 阶段 lr 远小于 SFT
+batch_size: 1               # RL 每 step 1 道题 × G=4 次生成
+gradient_accumulation_steps: 4
+
+# ── 输出 ─────────────────────────────────────────────────────────────────
+output_dir: outputs/checkpoints/joint_ts_grpo
+seed: 42
+bf16: true
+prompt_style: structured
